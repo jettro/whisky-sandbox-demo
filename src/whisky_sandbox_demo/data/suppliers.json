@@ -1,0 +1,297 @@
+{
+  "snapshot_date": "2026-11-15",
+  "suppliers": [
+    {
+      "id": "S1",
+      "name": "Slijterij De Helm",
+      "fictional": false,
+      "website": "https://slijterijdehelm.nl/",
+      "notes": "Real shop. Prices and stock are a snapshot from 2026-11-15 and will have changed since.",
+      "offers": [
+        {
+          "whisky_id": "W01",
+          "price_cents": 2695,
+          "stock_bottles": 2,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/malt/tamnavulin-double-cask/"
+        },
+        {
+          "whisky_id": "W02",
+          "price_cents": 2795,
+          "stock_bottles": 2,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/malt/glen-moray-sherry-cask/"
+        },
+        {
+          "whisky_id": "W03",
+          "price_cents": 3495,
+          "stock_bottles": 6,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/malt/singleton-12-years-old/"
+        },
+        {
+          "whisky_id": "W04",
+          "price_cents": 3795,
+          "stock_bottles": 3,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/malt/aberlour-10-years-old-forest-reserve/"
+        },
+        {
+          "whisky_id": "W05",
+          "price_cents": 3895,
+          "stock_bottles": 2,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/malt/glenlivet-founders-reserve/"
+        },
+        {
+          "whisky_id": "W06",
+          "price_cents": 3995,
+          "stock_bottles": 6,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/malt/tomintoul-10-years-old/"
+        },
+        {
+          "whisky_id": "W07",
+          "price_cents": 3895,
+          "stock_bottles": 1,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/malt/old-pulteney-12-years-old/"
+        },
+        {
+          "whisky_id": "W08",
+          "price_cents": 3895,
+          "stock_bottles": 1,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/malt/glen-scotia-double-cask/"
+        },
+        {
+          "whisky_id": "W09",
+          "price_cents": 3495,
+          "stock_bottles": 4,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/malt/bowmore-9-years-old/"
+        },
+        {
+          "whisky_id": "W10",
+          "price_cents": 2995,
+          "stock_bottles": 6,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/malt/finlaggan-original/"
+        },
+        {
+          "whisky_id": "W11",
+          "price_cents": 2995,
+          "stock_bottles": 2,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/malt/ileach-single-islay-malt/"
+        },
+        {
+          "whisky_id": "W12",
+          "price_cents": 4095,
+          "stock_bottles": 2,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/malt/laphroaig-10-years-old/"
+        },
+        {
+          "whisky_id": "W13",
+          "price_cents": 3495,
+          "stock_bottles": 6,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/hart-brothers-islay-peated-single-malt-50/"
+        },
+        {
+          "whisky_id": "W14",
+          "price_cents": 4295,
+          "stock_bottles": 5,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/malt/finlaggan-cask-strength/"
+        },
+        {
+          "whisky_id": "W15",
+          "price_cents": 4795,
+          "stock_bottles": 2,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/malt/ileach-cask-strength/"
+        },
+        {
+          "whisky_id": "W16",
+          "price_cents": 4395,
+          "stock_bottles": 0,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/malt/scarabus-islay-single-malt/"
+        },
+        {
+          "whisky_id": "W17",
+          "price_cents": 3295,
+          "stock_bottles": 0,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/malt/speyburn-10-years-old/"
+        },
+        {
+          "whisky_id": "W18",
+          "price_cents": 2995,
+          "stock_bottles": 3,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/malt/monkey-shoulder-07-ltr/"
+        },
+        {
+          "whisky_id": "W19",
+          "price_cents": 3995,
+          "stock_bottles": 1,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/malt/rock-island/"
+        },
+        {
+          "whisky_id": "W20",
+          "price_cents": 3295,
+          "stock_bottles": 2,
+          "source_url": "https://slijterijdehelm.nl/winkel/whisky/malt/teeling-small-batch/"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "name": "Peat & Price",
+      "fictional": true,
+      "website": null,
+      "notes": "Fictional discount supplier: about 15% cheaper, narrow range, patchy stock.",
+      "offers": [
+        {
+          "whisky_id": "W09",
+          "price_cents": 2945,
+          "stock_bottles": 0
+        },
+        {
+          "whisky_id": "W10",
+          "price_cents": 2545,
+          "stock_bottles": 6
+        },
+        {
+          "whisky_id": "W11",
+          "price_cents": 2545,
+          "stock_bottles": 4
+        },
+        {
+          "whisky_id": "W12",
+          "price_cents": 3495,
+          "stock_bottles": 0
+        },
+        {
+          "whisky_id": "W13",
+          "price_cents": 2945,
+          "stock_bottles": 3
+        },
+        {
+          "whisky_id": "W14",
+          "price_cents": 3645,
+          "stock_bottles": 4
+        },
+        {
+          "whisky_id": "W15",
+          "price_cents": 4095,
+          "stock_bottles": 2
+        },
+        {
+          "whisky_id": "W18",
+          "price_cents": 2545,
+          "stock_bottles": 6
+        },
+        {
+          "whisky_id": "W20",
+          "price_cents": 2795,
+          "stock_bottles": 5
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "name": "Cask Corner",
+      "fictional": true,
+      "website": null,
+      "notes": "Fictional premium supplier: about 10% more expensive, wide range, good stock.",
+      "offers": [
+        {
+          "whisky_id": "W01",
+          "price_cents": 2945,
+          "stock_bottles": 8
+        },
+        {
+          "whisky_id": "W02",
+          "price_cents": 3045,
+          "stock_bottles": 12
+        },
+        {
+          "whisky_id": "W03",
+          "price_cents": 3845,
+          "stock_bottles": 8
+        },
+        {
+          "whisky_id": "W04",
+          "price_cents": 4145,
+          "stock_bottles": 12
+        },
+        {
+          "whisky_id": "W05",
+          "price_cents": 4295,
+          "stock_bottles": 8
+        },
+        {
+          "whisky_id": "W06",
+          "price_cents": 4395,
+          "stock_bottles": 12
+        },
+        {
+          "whisky_id": "W07",
+          "price_cents": 4295,
+          "stock_bottles": 8
+        },
+        {
+          "whisky_id": "W08",
+          "price_cents": 4295,
+          "stock_bottles": 12
+        },
+        {
+          "whisky_id": "W09",
+          "price_cents": 3845,
+          "stock_bottles": 8
+        },
+        {
+          "whisky_id": "W10",
+          "price_cents": 3295,
+          "stock_bottles": 12
+        },
+        {
+          "whisky_id": "W11",
+          "price_cents": 3295,
+          "stock_bottles": 8
+        },
+        {
+          "whisky_id": "W12",
+          "price_cents": 4495,
+          "stock_bottles": 12
+        },
+        {
+          "whisky_id": "W13",
+          "price_cents": 3845,
+          "stock_bottles": 8
+        },
+        {
+          "whisky_id": "W14",
+          "price_cents": 4695,
+          "stock_bottles": 12
+        },
+        {
+          "whisky_id": "W15",
+          "price_cents": 5245,
+          "stock_bottles": 8
+        },
+        {
+          "whisky_id": "W16",
+          "price_cents": 4845,
+          "stock_bottles": 0
+        },
+        {
+          "whisky_id": "W17",
+          "price_cents": 3595,
+          "stock_bottles": 0
+        },
+        {
+          "whisky_id": "W18",
+          "price_cents": 3295,
+          "stock_bottles": 12
+        },
+        {
+          "whisky_id": "W19",
+          "price_cents": 4395,
+          "stock_bottles": 8
+        },
+        {
+          "whisky_id": "W20",
+          "price_cents": 3595,
+          "stock_bottles": 12
+        }
+      ]
+    }
+  ]
+}

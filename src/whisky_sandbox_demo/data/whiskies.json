@@ -1,0 +1,366 @@
+{
+  "snapshot_date": "2026-11-15",
+  "source": "Names, ABV and bottle size of real whiskies as listed by Slijterij De Helm on 2026-11-15. Bottle size assumed to be the standard 70 cl where the shop does not state it. Tasting notes are self-written; flavour scores (0-10) are illustrative estimates by the demo author, not measurements.",
+  "whiskies": [
+    {
+      "id": "W01",
+      "name": "Tamnavulin Double Cask",
+      "distillery": "Tamnavulin",
+      "country": "Scotland",
+      "region": "Speyside",
+      "type": "single_malt",
+      "abv": 40.0,
+      "bottle_ml": 700,
+      "style": "sweet",
+      "tasting_notes": "Honeyed and soft, vanilla and pear with a light sherry finish.",
+      "flavour": {
+        "sweetness": 7,
+        "fruitiness": 6,
+        "smokiness": 0,
+        "intensity": 3
+      }
+    },
+    {
+      "id": "W02",
+      "name": "Glen Moray Sherry Cask",
+      "distillery": "Glen Moray",
+      "country": "Scotland",
+      "region": "Speyside",
+      "type": "single_malt",
+      "abv": 40.0,
+      "bottle_ml": 700,
+      "style": "sweet",
+      "tasting_notes": "Raisins, toffee and a touch of spice from sherry casks.",
+      "flavour": {
+        "sweetness": 7,
+        "fruitiness": 6,
+        "smokiness": 0,
+        "intensity": 4
+      }
+    },
+    {
+      "id": "W03",
+      "name": "Singleton 12 Years Old",
+      "distillery": "Dufftown",
+      "country": "Scotland",
+      "region": "Speyside",
+      "type": "single_malt",
+      "abv": 40.0,
+      "bottle_ml": 700,
+      "style": "sweet",
+      "tasting_notes": "Smooth and mellow: caramel, red apple, a little cocoa.",
+      "flavour": {
+        "sweetness": 7,
+        "fruitiness": 5,
+        "smokiness": 0,
+        "intensity": 3
+      }
+    },
+    {
+      "id": "W04",
+      "name": "Aberlour 10 Years Old Forest Reserve",
+      "distillery": "Aberlour",
+      "country": "Scotland",
+      "region": "Speyside",
+      "type": "single_malt",
+      "abv": 40.0,
+      "bottle_ml": 700,
+      "style": "rich",
+      "tasting_notes": "Baked apple, brown sugar and oak.",
+      "flavour": {
+        "sweetness": 6,
+        "fruitiness": 6,
+        "smokiness": 0,
+        "intensity": 4
+      }
+    },
+    {
+      "id": "W05",
+      "name": "Glenlivet Founder's Reserve",
+      "distillery": "Glenlivet",
+      "country": "Scotland",
+      "region": "Speyside",
+      "type": "single_malt",
+      "abv": 40.0,
+      "bottle_ml": 700,
+      "style": "fruity",
+      "tasting_notes": "Light and fresh: citrus, pear drops, a creamy finish.",
+      "flavour": {
+        "sweetness": 6,
+        "fruitiness": 7,
+        "smokiness": 0,
+        "intensity": 3
+      }
+    },
+    {
+      "id": "W06",
+      "name": "Tomintoul 10 Years Old",
+      "distillery": "Tomintoul",
+      "country": "Scotland",
+      "region": "Speyside",
+      "type": "single_malt",
+      "abv": 40.0,
+      "bottle_ml": 700,
+      "style": "sweet",
+      "tasting_notes": "Gentle and grassy with honey and vanilla.",
+      "flavour": {
+        "sweetness": 6,
+        "fruitiness": 5,
+        "smokiness": 0,
+        "intensity": 3
+      }
+    },
+    {
+      "id": "W07",
+      "name": "Old Pulteney 12 Years Old",
+      "distillery": "Pulteney",
+      "country": "Scotland",
+      "region": "Highland",
+      "type": "single_malt",
+      "abv": 40.0,
+      "bottle_ml": 700,
+      "style": "coastal",
+      "tasting_notes": "Coastal and briny with honey and a dry finish.",
+      "flavour": {
+        "sweetness": 4,
+        "fruitiness": 4,
+        "smokiness": 1,
+        "intensity": 5
+      }
+    },
+    {
+      "id": "W08",
+      "name": "Glen Scotia Double Cask",
+      "distillery": "Glen Scotia",
+      "country": "Scotland",
+      "region": "Campbeltown",
+      "type": "single_malt",
+      "abv": 46.0,
+      "bottle_ml": 700,
+      "style": "rich",
+      "tasting_notes": "Rich toffee and dried fruit, a faint salty edge.",
+      "flavour": {
+        "sweetness": 6,
+        "fruitiness": 6,
+        "smokiness": 1,
+        "intensity": 6
+      }
+    },
+    {
+      "id": "W09",
+      "name": "Bowmore 9 Years Old",
+      "distillery": "Bowmore",
+      "country": "Scotland",
+      "region": "Islay",
+      "type": "single_malt",
+      "abv": 40.0,
+      "bottle_ml": 700,
+      "style": "smoky",
+      "tasting_notes": "Gentle peat smoke over sherry sweetness.",
+      "flavour": {
+        "sweetness": 5,
+        "fruitiness": 4,
+        "smokiness": 5,
+        "intensity": 5
+      }
+    },
+    {
+      "id": "W10",
+      "name": "Finlaggan Original",
+      "distillery": "undisclosed Islay distillery",
+      "country": "Scotland",
+      "region": "Islay",
+      "type": "single_malt",
+      "abv": 40.0,
+      "bottle_ml": 700,
+      "style": "smoky",
+      "tasting_notes": "Peat smoke, lemon and sea spray.",
+      "flavour": {
+        "sweetness": 3,
+        "fruitiness": 2,
+        "smokiness": 7,
+        "intensity": 6
+      }
+    },
+    {
+      "id": "W11",
+      "name": "Ileach Single Islay Malt",
+      "distillery": "undisclosed Islay distillery",
+      "country": "Scotland",
+      "region": "Islay",
+      "type": "single_malt",
+      "abv": 40.0,
+      "bottle_ml": 700,
+      "style": "smoky",
+      "tasting_notes": "Earthy peat, iodine and black pepper.",
+      "flavour": {
+        "sweetness": 2,
+        "fruitiness": 2,
+        "smokiness": 8,
+        "intensity": 7
+      }
+    },
+    {
+      "id": "W12",
+      "name": "Laphroaig 10 Years Old",
+      "distillery": "Laphroaig",
+      "country": "Scotland",
+      "region": "Islay",
+      "type": "single_malt",
+      "abv": 40.0,
+      "bottle_ml": 700,
+      "style": "smoky",
+      "tasting_notes": "Medicinal peat, seaweed and a sweet oak backbone.",
+      "flavour": {
+        "sweetness": 2,
+        "fruitiness": 2,
+        "smokiness": 9,
+        "intensity": 8
+      }
+    },
+    {
+      "id": "W13",
+      "name": "Hart Brothers Islay Peated Single Malt 50%",
+      "distillery": "undisclosed Islay distillery",
+      "country": "Scotland",
+      "region": "Islay",
+      "type": "single_malt",
+      "abv": 50.0,
+      "bottle_ml": 700,
+      "style": "smoky",
+      "tasting_notes": "Bold smoke, ash and lemon; bottled at exactly 50%.",
+      "flavour": {
+        "sweetness": 2,
+        "fruitiness": 2,
+        "smokiness": 8,
+        "intensity": 8
+      }
+    },
+    {
+      "id": "W14",
+      "name": "Finlaggan Cask Strength",
+      "distillery": "undisclosed Islay distillery",
+      "country": "Scotland",
+      "region": "Islay",
+      "type": "single_malt",
+      "abv": 58.0,
+      "bottle_ml": 700,
+      "style": "smoky",
+      "tasting_notes": "Powerful peat and pepper at cask strength.",
+      "flavour": {
+        "sweetness": 2,
+        "fruitiness": 2,
+        "smokiness": 9,
+        "intensity": 9
+      }
+    },
+    {
+      "id": "W15",
+      "name": "Ileach Cask Strength",
+      "distillery": "undisclosed Islay distillery",
+      "country": "Scotland",
+      "region": "Islay",
+      "type": "single_malt",
+      "abv": 58.0,
+      "bottle_ml": 700,
+      "style": "smoky",
+      "tasting_notes": "Intense, oily peat smoke at cask strength.",
+      "flavour": {
+        "sweetness": 2,
+        "fruitiness": 2,
+        "smokiness": 9,
+        "intensity": 9
+      }
+    },
+    {
+      "id": "W16",
+      "name": "Scarabus Islay Single Malt",
+      "distillery": "undisclosed Islay distillery",
+      "country": "Scotland",
+      "region": "Islay",
+      "type": "single_malt",
+      "abv": 46.0,
+      "bottle_ml": 700,
+      "style": "smoky",
+      "tasting_notes": "Smoky and sweet with vanilla and bonfire notes.",
+      "flavour": {
+        "sweetness": 3,
+        "fruitiness": 2,
+        "smokiness": 8,
+        "intensity": 7
+      }
+    },
+    {
+      "id": "W17",
+      "name": "Speyburn 10 Years Old",
+      "distillery": "Speyburn",
+      "country": "Scotland",
+      "region": "Speyside",
+      "type": "single_malt",
+      "abv": 40.0,
+      "bottle_ml": 700,
+      "style": "sweet",
+      "tasting_notes": "Light, citrusy and lightly spiced.",
+      "flavour": {
+        "sweetness": 5,
+        "fruitiness": 5,
+        "smokiness": 0,
+        "intensity": 3
+      }
+    },
+    {
+      "id": "W18",
+      "name": "Monkey Shoulder",
+      "distillery": "William Grant & Sons (blend of Speyside malts)",
+      "country": "Scotland",
+      "region": "Speyside",
+      "type": "blended_malt",
+      "abv": 40.0,
+      "bottle_ml": 700,
+      "style": "sweet",
+      "tasting_notes": "Vanilla, honey and orange; very approachable.",
+      "flavour": {
+        "sweetness": 7,
+        "fruitiness": 5,
+        "smokiness": 0,
+        "intensity": 3
+      }
+    },
+    {
+      "id": "W19",
+      "name": "Rock Island",
+      "distillery": "Douglas Laing (blend of island malts)",
+      "country": "Scotland",
+      "region": "Islands",
+      "type": "blended_malt",
+      "abv": 46.8,
+      "bottle_ml": 700,
+      "style": "coastal",
+      "tasting_notes": "Maritime smoke with a sweet, fruity middle.",
+      "flavour": {
+        "sweetness": 4,
+        "fruitiness": 4,
+        "smokiness": 5,
+        "intensity": 6
+      }
+    },
+    {
+      "id": "W20",
+      "name": "Teeling Small Batch",
+      "distillery": "Teeling",
+      "country": "Ireland",
+      "region": null,
+      "type": "blend",
+      "abv": 46.0,
+      "bottle_ml": 700,
+      "style": "fruity",
+      "tasting_notes": "Rum-cask sweetness, vanilla and spice; malt and grain.",
+      "flavour": {
+        "sweetness": 6,
+        "fruitiness": 6,
+        "smokiness": 0,
+        "intensity": 4
+      }
+    }
+  ]
+}
