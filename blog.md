@@ -150,3 +150,10 @@ Small task + one run = anecdote, not a benchmark. Say so in the post.
 - The agent wrote `make_pack.py` (~6 KB) with the plan embedded as JSON, ran it once, listed
   `pack/`. Cards: "BLIND TASTING / A / Tasting notes", no names. Chart titled
   "Flavour profile — illustrative estimates, 2026-11-15 shop snapshot".
+
+## Makefile
+
+- Added a Makefile so the post can show one-liners: `make demo-tools`, `make demo-monty`,
+  `make demo-smol`, `make demos`, `make check`. `demo-smol` depends on `guest/wheels`, so the
+  first run downloads and verifies the guest wheelhouse automatically.
+- The demo targets set `PYDANTIC_AI_NO_BANNER=1` to keep terminal output (and screenshots) clean.

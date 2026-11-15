@@ -66,6 +66,18 @@ uv run python scripts/prepare_guest_image.py
 uv run python -m whisky_sandbox_demo.demos.monty_smol
 ```
 
+Or use the Makefile (`make help` lists every target):
+
+| Target | Does |
+| --- | --- |
+| `make install` / `make env` | `uv sync` / create `.env` from `.env.example` |
+| `make demo-tools`, `make demo-monty`, `make demo-smol` | Demo 1, 2, 3 (`demo-smol` prepares the guest wheels first if missing) |
+| `make demos` | All three in order |
+| `make guest-image` | Download and verify the guest wheels |
+| `make check` | Ruff and the offline tests (`make lint`, `make test`, `make format` separately) |
+| `make test-integration` | Live model and VM checks |
+| `make clean` / `make clean-guest` | Remove `output/` and caches / the wheelhouse |
+
 Each demo prints the plan, the validation result and the run metrics, and saves them under
 `output/<variant>/`. Set `PYDANTIC_AI_NO_BANNER=1` to hide Pydantic AI's start-up banner.
 
