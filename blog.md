@@ -253,3 +253,38 @@ What this shows:
   better than plain Monty, still worse than tool calls on this small task.
 - Note the type checker cuts both ways: it catches wrong guesses about data shapes *before* any
   tool runs (good), but each rejection costs a model round trip.
+
+## Same runs with gpt-6.1-sol (2026-11-16, budget €120, one run each)
+
+gpt-6-luna results kept in `output/_archive/gpt-6-luna/` for comparison.
+
+| | tool_calls | monty | monty_program | monty_smol |
+| --- | --- | --- | --- | --- |
+| requests luna → sol | 4 → 4 | 7 → 5 | 4 → **3** | 6 → 8 |
+| input tokens luna → sol | 8.8k → 8.9k | 29.6k → 22.5k | 18.7k → 13.1k | 44.8k → 67.2k |
+| output tokens luna → sol | 2.6k → 1.4k | 2.9k → 1.6k | 3.0k → 2.5k | 4.9k → 4.5k |
+| elapsed luna → sol | 31.9 → 27.8 s | 40.1 → 28.8 s | 31.0 → 26.0 s | 52.0 → 58.3 s |
+| plan (sol) | W01 W02 W09 W11 | W01 W02 W09 W10 | W01 W02 W09 W11 | W01 W02 W09 W10 |
+
+All valid, all €119.80 again; artifacts in demo 3 all pass.
+
+- **Same ranking with a different model**: plain tool calls are still the cheapest in tokens;
+  the one-program prompt still gives the fewest model requests (3: one failed program, one good
+  program, final answer). The conclusion does not depend on one model.
+- **sol is more consistent and more concise**: all four runs picked Tamnavulin → Glen Moray
+  Sherry → Bowmore 9 → an Islay finish (luna produced four different flights), and output
+  tokens dropped by up to ~45%.
+- **Plain Monty is still REPL-style** with sol, just fewer steps (4 snippets instead of 6).
+  Snippet 3 fetched details + all three suppliers in one `asyncio.gather` and returned the raw
+  result: 13 KB back into the context. Still 2.5x the input tokens of plain tool calls.
+- **Both models made the same type error** in the one-program variant: they assumed a `whiskies`
+  key on the supplier-offers result (`Unknown key "whiskies" for TypedDict SupplierOffersResult`).
+  The typed stubs are in the prompt, but the models guess field names anyway. Monty's type check
+  caught it before any tool ran; sol's fix included `from typing import Any` to loosen the types.
+- **Demo 3 got more expensive with sol** (8 requests, 67k tokens): it did the planning in 4
+  REPL-style snippets, then write_file → run_command → an extra `list_directory` to confirm the
+  files. Each extra request re-sends a growing context.
+- Visible overhead per request, before any data: tool calls 714 input tokens, Code Mode 1,960,
+  Code Mode + Shell + FileSystem 3,335. The tool descriptions alone cost that on *every* request.
+- One run per model per demo: the direction is consistent across two models, the exact numbers
+  are not reliable. Worth repeating a few times before publishing figures.
