@@ -157,3 +157,99 @@ Small task + one run = anecdote, not a benchmark. Say so in the post.
   `make demo-smol`, `make demos`, `make check`. `demo-smol` depends on `guest/wheels`, so the
   first run downloads and verifies the guest wheelhouse automatically.
 - The demo targets set `PYDANTIC_AI_NO_BANNER=1` to keep terminal output (and screenshots) clean.
+
+## Reading a Monty run: why 4 `run_code` calls? (run at 23:36)
+
+Per-request breakdown from `messages.json` (tool_calls run from 19:42 for comparison):
+
+| request | tool_calls: in / out tokens, calls | monty: in / out tokens, snippet |
+| --- | --- | --- |
+| 1 | 714 / 17, `get_tasting_brief` | 1,960 / 28, `brief = await get_tasting_brief()` |
+| 2 | 1,055 / 35, `search_whiskies` | 2,309 / 46, `catalogue = await search_whiskies()` |
+| 3 | 1,971 / 358, details + 3x offers (parallel) | 3,234 / 112, `asyncio.gather` offers from S1-S3 for all 20 ids |
+| 4 | 5,293 / 1,716, `final_result` | 5,291 / 289, `get_whisky_details` for 8 shortlisted ids |
+| 5 | – | 6,384 / 1,142, `final_result` |
+
+- Yes, *all* domain calls go through Monty: top level is only `run_code` x4 + `final_result`;
+  the 6 domain calls are nested. That is what `CodeMode(tools="all")` does.
+- But each `run_code` is still one model round trip. The model used Monty as a REPL: one step,
+  look at the result, decide the next step. Variables persist between snippets (`catalogue` from
+  snippet 2 is reused in snippet 3), but the *thinking* happens between snippets, in the model.
+- Every snippet ends with the raw value (`brief`, `catalogue`, `offers`, `details`), so all data
+  flows back into the context anyway. No data reduction in code this time (an earlier run did
+  filter on type and ABV in snippet 3).
+- Fixed overhead: request 1 costs 1,960 input tokens vs 714. The `run_code` tool description
+  carries the Python stubs of all tools plus Monty's rules (~1.2k tokens), paid on every request.
+  5 requests x ~1.2k explains most of the gap (19.2k vs 9.1k input tokens in total).
+- Code Mode only saves round trips and tokens when the model writes the dependent steps as one
+  program and returns a compact result. The task here is small and judgment-heavy (choosing by
+  tasting notes), so the model prefers to read the data itself.
+- Our instructions say "Start with get_tasting_brief", which also nudges a step-by-step style.
+
+## Experiment: "write one program" (demos/monty_program.py, 2026-11-15)
+
+Same as demo 2 plus one instruction: fetch, filter and summarise in a single `run_code`, return
+only a compact summary. Result of one run:
+
+| request | in / out tokens | what happened |
+| --- | --- | --- |
+| 1 | 2,085 / 1,311 | one full program (2.4 KB) — **rejected by Monty's type checker** before running: `No overload of function sum matches arguments` |
+| 2 | 3,849 / 748 | rewrote `sum(...)` as a loop — rejected again: `Unsupported += operation` |
+| 3 | 4,937 / 1,074 | ran: all 6 domain calls in one snippet (`asyncio.gather` for brief+catalogue and 3 suppliers), filtering on type/ABV/stock, `itertools.combinations` for budget — but returned **100,614 chars** |
+| 4 | 40,830 / 1,265 | small snippet to assemble the 4 chosen whiskies |
+| 5 | 42,606 / 1,660 | final_result |
+
+Total: 94,307 input tokens (demo 2: 19,178; tool calls: 9,095), 57 s, plan valid (€125.80).
+
+What this shows:
+- **The one-program idea worked mechanically**: snippet 3 did every lookup and the constraint
+  filtering in code, in one round trip. The model wrote real coordination code, not a REPL session.
+- **Monty type-checks before it runs.** The model built dicts mixing `str`, `float`, `int` and
+  nested dicts, so `x['line_total_cents']` had a union type and `sum()` / `+=` failed the check.
+  No tool was called by the rejected snippets (nested call count stayed at 6), but each rejection
+  cost a model round trip. A strict sandbox language has a price for loosely typed LLM code.
+- **"Compact summary" is up to the model.** It returned every valid 4-whisky combination: 715 at
+  S1 and 715 at S3. That one result (~100 KB) then sat in the context for the last two requests,
+  which is where the 94k tokens come from. Code Mode only saves tokens if the code *reduces* data.
+- **Side finding about the scenario**: 13 whiskies are eligible at S1 and C(13,4) = 715, so *every*
+  combination fits the €200 budget. The budget never binds; the real constraints are type, ABV and
+  stock. A tighter budget (e.g. €140) would make the agent actually trade off price.
+- Takeaway for the post: Code Mode changes *where* the work can happen, not *whether* the model
+  does it efficiently. Results swing a lot with the model's coding choices and with prompts.
+
+## Budget lowered from €200 to €120 (2026-11-15)
+
+- Asked for "under €100" first: impossible with this data. One 70 cl bottle per whisky is
+  needed (8 x 20 ml = 160 ml), and the four cheapest valid bottles at De Helm add up to €114.80.
+  The brute-force solvability check answered that in a second — worth having.
+- Budget options computed from the fixtures: €115 → 1 valid set, **€120 → 7**, €125 → 27,
+  €130 → 77, €200 → 715 per full-range supplier (every combination fits). Picked €120.
+- New tests: the default budget must actually limit the choice (2–10 valid sets at S1, none at
+  S3), and a "nicer" flight with Glen Scotia + Laphroaig (€134.80) now fails on budget.
+- Bug found while re-running: saved Monty snippets from a previous run stayed in `code/` when the
+  new run had fewer snippets. `save_run` now clears old `snippet_*.py` first.
+
+### Results at €120, one run each, gpt-6-luna
+
+| | tool_calls | monty | monty_program (prompt variant) | monty_smol |
+| --- | --- | --- | --- | --- |
+| elapsed | 31.9 s | 40.1 s | 31.0 s | 52.0 s (+5.6 s VM setup) |
+| model requests | 4 | 7 | 4 | 6 |
+| input / output tokens | 8,816 / 2,614 | 29,557 / 2,935 | 18,667 / 3,000 | 44,766 / 4,944 |
+| top-level calls | 10 domain + final | 6 `run_code` + final | 3 `run_code` + final | 3 `run_code`, `write_file`, `run_command`, final |
+| plan | €119.80 | €119.80 | €119.80 | €119.80 |
+
+- All four runs landed on €119.80, the most expensive of the 7 valid sets — four different
+  flights at the same price (sweet, sweet, then two smoky ones; or three sweet + one smoky).
+- The rejection reasons became much more interesting: "substituting Aberlour for Singleton
+  would raise the total to €122.80, €2.80 over budget"; "Cask Corner: the same four cost
+  €131.30". The agent is now visibly trading off price.
+- Plain tool calling batched aggressively: four `search_whiskies(style=...)` calls in one turn,
+  then details + three supplier lookups in parallel in the next. 4 requests, fewest tokens.
+- Monty (demo 2) went REPL-style again, now 6 snippets → 7 requests, 3.4x the input tokens.
+- The one-program variant: first program rejected by the type checker
+  (`Unknown key "whiskies" for TypedDict Supplier`, it guessed the shape of a supplier record),
+  then one program returned a 9 KB filtered summary per supplier. 4 requests, 18.7k tokens:
+  better than plain Monty, still worse than tool calls on this small task.
+- Note the type checker cuts both ways: it catches wrong guesses about data shapes *before* any
+  tool runs (good), but each rejection costs a model round trip.

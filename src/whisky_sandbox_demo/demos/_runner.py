@@ -17,10 +17,16 @@ from whisky_sandbox_demo.tools import DOMAIN_TOOLS
 from whisky_sandbox_demo.validation import validate_plan
 
 
-def build_planning_agent(capabilities: Sequence[AbstractCapability[Any]] = ()) -> Agent:
+def build_planning_agent(
+    capabilities: Sequence[AbstractCapability[Any]] = (),
+    extra_instructions: str | None = None,
+) -> Agent:
+    instructions = (
+        INSTRUCTIONS if not extra_instructions else f"{INSTRUCTIONS}\n{extra_instructions}"
+    )
     return Agent(
         config.get_agent_model(),
-        instructions=INSTRUCTIONS,
+        instructions=instructions,
         output_type=TastingPlan,
         tools=list(DOMAIN_TOOLS),
         capabilities=list(capabilities),
@@ -32,10 +38,13 @@ async def run_planning_demo(
     capabilities: Sequence[AbstractCapability[Any]] = (),
     *,
     uses_code_mode: bool,
+    extra_instructions: str | None = None,
+    comparable_with: Sequence[str] = ("tool_calls", "monty"),
+    notes: Sequence[str] = (),
 ) -> None:
     config.require_openai_key()
     tracing = config.configure_logfire()
-    agent = build_planning_agent(capabilities)
+    agent = build_planning_agent(capabilities, extra_instructions)
     print(f"[{variant}] model={config.get_agent_model()} tracing={'logfire' if tracing else 'off'}")
     print(f"Task: {TASK}")
 
@@ -53,8 +62,9 @@ async def run_planning_demo(
         result=result,
         elapsed=elapsed,
         validation_valid=report.valid,
-        comparable_with=["tool_calls", "monty"],
+        comparable_with=list(comparable_with),
         uses_code_mode=uses_code_mode,
+        notes=list(notes),
     )
 
     if snippets:

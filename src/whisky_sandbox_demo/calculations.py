@@ -11,7 +11,7 @@ class Requirements:
     participants: int = 8
     pour_ml: int = 20
     whisky_count: int = 4
-    budget_cents: int = 20_000
+    budget_cents: int = 12_000
     max_abv: float = 50.0
     required_type: str = "single_malt"
 

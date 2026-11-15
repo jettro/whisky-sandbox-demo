@@ -48,7 +48,8 @@ def make_plan(supplier_id: str, whisky_ids: list[str]) -> TastingPlan:
     )
 
 
-GOOD_SELECTION = ("S1", ["W01", "W02", "W08", "W12"])
+# Cheapest valid flight at De Helm: two sweet Speysiders, two smoky Islays, €114.80.
+GOOD_SELECTION = ("S1", ["W01", "W02", "W10", "W11"])
 
 
 @pytest.fixture

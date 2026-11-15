@@ -7,7 +7,7 @@ and [Pydantic AI Harness](https://pydantic.dev/docs/ai/harness/).
 The task: organise a blind whisky tasting.
 
 > Organise a blind tasting for eight people with four different single malt whiskies. The total
-> bottle budget is €200. Begin accessible and sweet, and finish smoky. Each whisky must be at
+> bottle budget is €120. Begin accessible and sweet, and finish smoky. Each whisky must be at
 > most 50% ABV. Buy all bottles from one supplier, with sufficient stock. Each participant
 > receives 20 ml of each whisky.
 
@@ -27,6 +27,10 @@ answer sheet, a shopping-list CSV and a flavour chart."*
 - Built-in traps: cask-strength versions above 50% ABV, blended malts listed in the shop's
   "malt" category, sold-out and backorder-only bottles, and a cheap supplier that cannot fill
   the flight. Hart Brothers Islay Peated is exactly 50%, which is allowed.
+- The €120 budget is deliberately tight: only 7 sets of four fit, all at De Helm (the cheapest
+  is €114.80). Richer middle whiskies such as Glen Scotia or Aberlour push a flight over budget,
+  and the premium supplier S3 cannot fit any set. With €200 every combination fit, so the budget
+  never influenced the choice.
 - Money is integer euro cents and stock is whole bottles. Bottles per whisky =
   `ceil(participants × pour_ml / bottle_ml)`, so larger groups work too.
 
@@ -73,6 +77,7 @@ Or use the Makefile (`make help` lists every target):
 | `make install` / `make env` | `uv sync` / create `.env` from `.env.example` |
 | `make demo-tools`, `make demo-monty`, `make demo-smol` | Demo 1, 2, 3 (`demo-smol` prepares the guest wheels first if missing) |
 | `make demos` | All three in order |
+| `make demo-monty-program` | The one-program experiment (below) |
 | `make guest-image` | Download and verify the guest wheels |
 | `make check` | Ruff and the offline tests (`make lint`, `make test`, `make format` separately) |
 | `make test-integration` | Live model and VM checks |
@@ -105,6 +110,23 @@ fixture data, independent of what the agent claimed: four distinct single malts,
 existing supplier that sells each whisky, enough bottles and stock, prices and product facts
 that match, correct line totals and total, and the budget. These decide `VALID`. The flavour
 progression (sweetest first, smokiest last) is reported separately as a **recommendation**.
+
+### Experiment: asking for one program
+
+`demos/monty_program.py` is demo 2 plus one extra instruction
+(`prompts.ONE_PROGRAM_INSTRUCTIONS`): fetch, filter and summarise in a single `run_code` call and
+return only a compact summary. Everything else is identical. Because the prompt differs, it is
+*not* part of the controlled comparison; it shows how much the model's coding style decides
+whether Code Mode saves anything.
+
+```bash
+uv run python -m whisky_sandbox_demo.demos.monty_program
+```
+
+Results go to `output/monty_program/`. In a first run (with the old €200 budget) the program
+did all six lookups in one snippet, but two attempts were rejected by Monty's type checker and
+the "summary" listed every valid combination (715 per supplier), so it used far more tokens than
+demo 2. With the €120 budget it needed 4 model requests and 18.7k input tokens.
 
 ## Where code runs
 

@@ -2,7 +2,7 @@
 
 TASK = (
     "Organise a blind tasting for eight people with four different single malt whiskies. "
-    "The total bottle budget is €200. Begin accessible and sweet, and finish smoky. "
+    "The total bottle budget is €120. Begin accessible and sweet, and finish smoky. "
     "Each whisky must be at most 50% ABV. Buy all bottles from one supplier, with sufficient "
     "stock. Each participant receives 20 ml of each whisky."
 )
@@ -43,4 +43,13 @@ and the chart.
 
 Run the script with the shell tool, fix any error, then list pack/ to confirm all four files.
 Return the plan and the list of generated files.
+"""
+
+ONE_PROGRAM_INSTRUCTIONS = """\
+Experiment: work in as few run_code calls as possible. In your first run_code call, write one
+program that fetches everything it needs (use asyncio.gather for independent calls), applies the
+hard constraints in code (type, ABV, stock, budget, a single supplier), computes bottles and
+costs, and returns only a compact summary: per supplier, the eligible whiskies with id, name,
+style, ABV, price and flavour scores. Do not return raw tool results. Use another run_code call
+only to fix an error or to fetch something you could not have known you needed.
 """

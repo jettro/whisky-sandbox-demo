@@ -4,7 +4,7 @@ UV ?= uv
 RUN := PYDANTIC_AI_NO_BANNER=1 $(UV) run
 
 .DEFAULT_GOAL := help
-.PHONY: help install env demo-tools demo-monty demo-smol demos guest-image \
+.PHONY: help install env demo-tools demo-monty demo-monty-program demo-smol demos guest-image \
 	lint format check test test-integration clean clean-output clean-guest
 
 help: ## Show this help
@@ -29,6 +29,9 @@ demo-tools: ## Demo 1: ordinary tool calling
 
 demo-monty: ## Demo 2: the same tools through Code Mode (Monty)
 	$(RUN) python -m whisky_sandbox_demo.demos.monty
+
+demo-monty-program: ## Experiment: demo 2 with an extra "write one program" instruction
+	$(RUN) python -m whisky_sandbox_demo.demos.monty_program
 
 demo-smol: guest/wheels ## Demo 3: Monty plus a Smol microVM that builds the tasting pack
 	$(RUN) python -m whisky_sandbox_demo.demos.monty_smol

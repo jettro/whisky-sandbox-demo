@@ -30,6 +30,12 @@ def test_multiple_valid_selections():
     assert len(valid_sets("S1")) + len(valid_sets("S3")) >= 2
 
 
+def test_budget_actually_limits_the_choice():
+    # Without the budget there are 715 combinations per full-range supplier; with it, a handful.
+    assert 2 <= len(valid_sets("S1")) <= 10
+    assert valid_sets("S3") == []  # the premium supplier is too expensive at this budget
+
+
 def test_discount_supplier_cannot_fill_the_flight():
     assert valid_sets("S2") == []
 

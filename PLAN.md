@@ -129,7 +129,7 @@ Suppliers:
   trade-off. The fixture flags each supplier with `fictional: true/false`.
 
 Solvability: at De Helm alone there are many valid sets (e.g. Tamnavulin → Glen Moray Sherry →
-Glen Scotia Double Cask → Laphroaig 10 = €134.80), so the €200 budget leaves room for choice.
+Glen Scotia Double Cask → Laphroaig 10 = €134.80), so the €200 budget leaves room for choice. (Later lowered to €120: see the update at the end.)
 At S2 no set has a sweet opener plus a smoky finish. The brute-force test checks both.
 - Required bottles: `ceil(participants * pour_ml / bottle_ml)` → 8×20 ml = 160 ml → 1 bottle of 700 ml
   each. Tests also check larger groups (e.g. 40 people → 2 bottles of 700 ml, 3 of 500 ml) and the
@@ -262,3 +262,5 @@ unrelated to agent execution workspaces.
   and every demo 3 VM installs them offline. The guest has no network at any point.
 - `fixtures.py`, `calculations.py`, `metrics.py` and `guest.py` were added to the suggested layout.
 - See README.md for the final structure and blog.md for build notes and measured results.
+- Budget lowered from €200 to €120 after the first runs showed it never limited the choice
+  (all 715 combinations fit). At €120, 7 sets are valid, all at S1; none at S2 or S3.

@@ -34,7 +34,7 @@ def test_fixture_contains_the_intended_traps():
 def test_brief_exposes_supplier_ids_and_rules():
     brief = get_tasting_brief()
     assert [s.id for s in brief.suppliers] == ["S1", "S2", "S3"]
-    assert brief.budget_cents == 20_000
+    assert brief.budget_cents == 12_000
     assert brief.max_abv == 50.0
     assert brief.participants == 8 and brief.pour_ml == 20
 

@@ -18,7 +18,7 @@ def test_good_plan_passes(good_plan):
 
 
 def test_bad_order_is_only_a_recommendation():
-    plan = make_plan("S1", ["W12", "W08", "W02", "W01"])  # smoky first
+    plan = make_plan("S1", ["W11", "W10", "W02", "W01"])  # smoky first
     report = validate_plan(plan)
     assert report.valid
     assert not all(c.passed for c in report.checks if c.kind == "recommendation")
@@ -42,7 +42,7 @@ def test_constraint_violations(selection, expected_failure):
 
 
 def test_exactly_50_percent_is_allowed():
-    plan = make_plan("S1", ["W01", "W02", "W08", "W13"])
+    plan = make_plan("S1", ["W01", "W02", "W10", "W13"])  # €119.80
     assert validate_plan(plan).valid
 
 
@@ -60,14 +60,20 @@ def test_arithmetic_errors_are_caught(good_plan):
 
 def test_wrong_product_facts_are_caught(good_plan):
     good_plan.whiskies[3].abv = 46.0
-    assert "D:W12 facts" in failed_names(good_plan)
+    assert "D:W11 facts" in failed_names(good_plan)
 
 
 def test_mixed_supplier_prices_are_caught(good_plan):
-    # Claims De Helm but uses the cheaper (fictional) S2 price for the Laphroaig.
-    good_plan.whiskies[3].unit_price_cents = 3495
-    good_plan.whiskies[3].line_total_cents = 3495
-    assert "D:W12 price" in failed_names(good_plan)
+    # Claims De Helm but uses the cheaper (fictional) S2 price for the Ileach.
+    good_plan.whiskies[3].unit_price_cents = 2545
+    good_plan.whiskies[3].line_total_cents = 2545
+    good_plan.total_cost_cents -= 2995 - 2545
+    assert "D:W11 price" in failed_names(good_plan)
+
+
+def test_richer_middle_whiskies_break_the_default_budget():
+    # Glen Scotia + Laphroaig make a nicer flight, but €134.80 is over the €120 budget.
+    assert "budget" in failed_names(make_plan("S1", ["W01", "W02", "W08", "W12"]))
 
 
 def test_over_budget():

@@ -90,8 +90,10 @@ def save_run(
     (out_dir / "metrics.json").write_text(_dump(metrics))
     (out_dir / "messages.json").write_bytes(ModelMessagesTypeAdapter.dump_json(messages, indent=2))
     (out_dir / "DATA_NOTICE.txt").write_text(data_disclaimer() + "\n")
+    code_dir = out_dir / "code"
+    for old in code_dir.glob("snippet_*.py"):  # never mix snippets from an earlier run
+        old.unlink()
     if snippets:
-        code_dir = out_dir / "code"
         code_dir.mkdir(exist_ok=True)
         for i, code in enumerate(snippets, start=1):
             (code_dir / f"snippet_{i:02d}.py").write_text(code)
