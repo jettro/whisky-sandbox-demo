@@ -36,6 +36,10 @@ class RunMetrics(BaseModel):
     nested_tool_calls: dict[str, int] | None
     """Calls made inside Monty `run_code` snippets, by name; None without Code Mode."""
     run_code_snippets: int | None
+    peak_request_input_tokens: int | None = None
+    """Largest input-token count of a single model request (None if not reported)."""
+    tool_return_chars: int | None = None
+    """Characters of tool results sent back to the model (JSON-serialised)."""
     validation_valid: bool | None
     comparable_with: list[str]
     notes: list[str] = []
@@ -93,6 +97,20 @@ def run_code_snippets(messages: list[ModelMessage]) -> list[str]:
     return out
 
 
+def context_measures(messages: list[ModelMessage]) -> tuple[int | None, int]:
+    peaks = [
+        m.usage.input_tokens
+        for m in messages
+        if isinstance(m, ModelResponse) and m.usage and m.usage.input_tokens
+    ]
+    returned = 0
+    for message in messages:
+        for part in message.parts:
+            if isinstance(part, ToolReturnPart):
+                returned += len(part.model_response_str())
+    return (max(peaks) if peaks else None), returned
+
+
 def collect(
     *,
     variant: str,
@@ -107,6 +125,7 @@ def collect(
     usage = result.usage
     messages = result.all_messages()
     top, nested, snippets = count_calls(messages)
+    peak, returned = context_measures(messages)
     return RunMetrics(
         variant=variant,
         model=model,
@@ -120,6 +139,8 @@ def collect(
         top_level_tool_calls=dict(top),
         nested_tool_calls=dict(nested) if nested is not None else ({} if uses_code_mode else None),
         run_code_snippets=snippets if uses_code_mode else None,
+        peak_request_input_tokens=peak,
+        tool_return_chars=returned,
         validation_valid=validation_valid,
         comparable_with=comparable_with,
         notes=notes or [],

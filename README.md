@@ -128,6 +128,70 @@ did all six lookups in one snippet, but two attempts were rejected by Monty's ty
 the "summary" listed every valid combination (715 per supplier), so it used far more tokens than
 demo 2. With the €120 budget it needed 4 model requests and 18.7k input tokens.
 
+## Scenario 2: a club season over the full catalogue
+
+Scenario 1 turned out to be close to the worst case for Code Mode: six batchable lookups, about
+20 KB of data, and a choice that is mostly taste. Scenario 2 is built for the situations where
+Code Mode *should* help, using the real shape of the shop's API (plan: `PLAN-season.md`).
+
+> Plan a tasting season for our whisky club of 30 members: four evenings with four whiskies
+> each, 20 ml per member per whisky. Themes: Speyside, Islay, sherry casks, and world whisky
+> (outside Scotland). Only single malts of at most 50% ABV, no whisky twice in the season. Buy
+> each evening from one supplier with enough stock. Stay within the season budget, shipping
+> included. Within each evening go from lighter to heavier, and finish the Islay evening with
+> the smokiest.
+
+- **Data**: 504 whiskies at €20–€80 from Slijterij De Helm's public Store API, snapshot
+  2026-11-16 (`data/season_catalogue.json`, built by `scripts/snapshot_de_helm.py`). Only facts
+  are stored. ABV, the single-malt flag and the sherry-cask flag are parsed from the shop's text
+  and stay `null` when unclear; unknown values never satisfy a rule. Region is missing for about
+  30%, ABV for about 15%, and bottle size is mostly unstated (70 cl assumed). S2, S3 and all
+  shipping terms are fictional.
+- **Tools** mirror the real API: `get_season_brief()`, `list_products(supplier_id, page)` with 50
+  per page and no ABV/size/single-malt fields, and `get_products(supplier_id, ids)` for up to 25
+  ids. No filters the real listing lacks. Reading every listing returns about 187 KB.
+- **Budget €540**: a reference solver that exists only in the tests finds a valid season at
+  €488.70; the budget is that plus about 10%. Picking from the middle of each theme's price
+  range costs about €828.
+- **Same prompt** for both variants. No "write one program" instruction: the scale has to make
+  the case.
+- **Validation** (`season/validation.py`): themes, eligibility, no repeats, stock, bottles,
+  prices, shipping per supplier order, totals and budget. Smokiest-last on Islay night is a
+  recommendation.
+
+```bash
+uv run python -m whisky_sandbox_demo.demos.season_tool_calls --runs 3
+```
+
+```bash
+uv run python -m whisky_sandbox_demo.demos.season_monty --runs 3
+```
+
+Or `make season-compare RUNS=3`. Each run is saved in `output/<variant>/run_NN/`, and
+`summary.json` holds the valid-plan rate and median/min/max of time, requests, tokens, the
+largest single request (`peak_request_input_tokens`) and the size of all tool results sent back
+to the model (`tool_return_chars`).
+
+### Results (gpt-6.1-sol, 2026-11-16)
+
+Three runs per variant (`make season-compare RUNS=3`), medians with min–max:
+
+| | tool calls | Monty |
+| --- | --- | --- |
+| valid seasons | 3 / 3 | 3 / 3 |
+| model requests | 8 (8–9) | 8 (7–8) |
+| input tokens | 208k (187k–244k) | **125k** (118k–133k) |
+| largest single request | 48.6k (45.6k–49.0k) | **27.8k** (23.6k–28.7k) |
+| tool output sent back to the model | 150k chars | **70k chars** |
+| listing pages read (of 21) | 14–15 | 21, inside code |
+| elapsed | 62 s | 65 s |
+
+Here Code Mode does what it promises: the code paged through every catalogue, filtered in Monty
+and sent about half as much data back, so the context stayed smaller and input tokens dropped by
+about 40%, with the same number of model requests and the same validity. The model still worked
+in several snippets, not one program. One earlier single run went the other way (tool calls 129k,
+Monty 176k), so the spread between runs is large: run several times before drawing conclusions.
+
 ## Where code runs
 
 ```
@@ -215,6 +279,9 @@ The default run is offline: no OpenAI key, network or VM. It covers fixture load
 traps in the data, tool filtering, prices and stock, bottle rounding (8 to 60 people, 50 and
 70 cl), plan validation including invalid plans, a brute-force check that valid selections exist
 (more than one, none at the discount supplier), and the artifact checks on synthetic files.
+For scenario 2: the snapshot parser (on synthetic records), pagination and API limits, the
+season validator, and feasibility: every theme has enough candidates, the reference season is
+valid, the budget is calibrated close to it and binds, and more than one valid season exists.
 
 Optional live checks (model calls and a real VM), each skipped when its prerequisite is missing:
 

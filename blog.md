@@ -288,3 +288,57 @@ All valid, all €119.80 again; artifacts in demo 3 all pass.
   Code Mode + Shell + FileSystem 3,335. The tool descriptions alone cost that on *every* request.
 - One run per model per demo: the direction is consistent across two models, the exact numbers
   are not reliable. Worth repeating a few times before publishing figures.
+
+## Next: a scenario where Code Mode should win (planned 2026-11-16, see PLAN-season.md)
+
+- Conclusion so far: on a small, batchable, judgement-heavy task, Code Mode does not pay off.
+  That is a result worth publishing as the baseline.
+- Scenario 2: a club season (4 themed evenings x 4 whiskies, 30 members, shipping, one budget)
+  over the *full* shop catalogue: 504 whiskies at €20–€80 in the real Store API.
+- Real data is messy in useful ways: region missing for 153 of 504, ABV findable for ~84%,
+  bottle size stated for ~30, blended malts inside the "malt" category. Filtering that is code work.
+- Tools mirror the real API (paginated listing, batch details by id), no extra filters, and the
+  same neutral prompt for tool calling and Monty: the scale must make the case, not the prompt.
+- Add correctness as a metric (valid-plan rate over several runs) plus peak context size.
+
+## Scenario 2 built and measured (2026-11-16, gpt-6.1-sol)
+
+Build notes:
+- Snapshot via the Store API: 6 pages of 100, 1 s pause, facts only. Raw responses cached in a
+  git-ignored `snapshot_cache/` (they contain shop descriptions) so the parser can be re-run.
+- Parser gotcha: "een van de eerste single malts" — plural "malts" missed by `\bsingle malt\b`.
+  After the fix: single_malt True 213, False 98, unknown 193 of 504. Unknown never satisfies a rule.
+- Parsed facts are the shop's claims: the shop says 40% for Glencadam 10 (often 46%); keyword
+  matching on "sherry" flags e.g. Speyburn 10 as sherry cask. Stated in the README, not fixed.
+- Eligible per theme at De Helm: Speyside 44, Islay 19, sherry 42, world 27.
+- Reference solver (tests only): 3^4 supplier assignments x greedy cheapest picks → €488.70.
+  Budget €540 (+10%). Middle-of-range picks cost ~€828, so the budget binds.
+- Listing everything = 187 KB of JSON (~50k tokens) across 21 pages.
+
+Results, 3 runs each (plus one earlier single run each, in brackets):
+
+| | tool calls | Monty |
+| --- | --- | --- |
+| valid | 3/3 (+1/1) | 3/3 (+1/1) |
+| requests, median | 8 (7) | 8 (9) |
+| input tokens, median | 208k (129k) | 125k (176k) |
+| peak single request | 48.6k (34.6k) | 27.8k (29.3k) |
+| tool output back to model | 150k chars (107k) | 70k chars (83k) |
+| listing pages read of 21 | 14–15 (~9) | 21 every time |
+| season totals | €529.20–€535.20, all De Helm | €530.20–€539.20; one run split S1 + S2 |
+
+What this shows:
+- **Code Mode wins once data volume is the bottleneck**: ~40% fewer input tokens, a ~43% smaller
+  peak request, half the tool output in the context — while reading the *whole* catalogue,
+  which plain tool calling never did.
+- **Same number of model requests.** The model still works in 6–7 snippets, not one program.
+  The saving comes from what each snippet returns (filtered lists instead of raw pages), not from
+  fewer round trips.
+- **Plain tool calling stops early**: it read 14–15 of 21 pages, so it chose from a partial
+  catalogue. Still valid plans, but it never saw some options.
+- **Variance is big**: the first single runs pointed the other way (Monty 176k vs 129k). With
+  only one run per variant I would have published the wrong conclusion. Repeat runs matter.
+- Only one of the eight runs used a second supplier (S2's cheaper Islay range); the others put
+  everything at De Helm, which ships free above €100. The shipping trade-off barely mattered.
+- Both scenarios together make the post: Code Mode costs ~1.2k tokens of tool description per
+  request, and pays that back only when code can shrink a lot of data before the model sees it.

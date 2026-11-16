@@ -5,6 +5,7 @@ RUN := PYDANTIC_AI_NO_BANNER=1 $(UV) run
 
 .DEFAULT_GOAL := help
 .PHONY: help install env demo-tools demo-monty demo-monty-program demo-smol demos guest-image \
+	season-snapshot season-tools season-monty season-compare \
 	lint format check test test-integration clean clean-output clean-guest
 
 help: ## Show this help
@@ -40,6 +41,21 @@ demos: demo-tools demo-monty demo-smol ## Run all three demos in order
 
 guest/wheels:
 	$(MAKE) guest-image
+
+# --- Scenario 2: club season over the full catalogue -------------------------------------------
+
+RUNS ?= 1
+
+season-snapshot: ## Re-parse (or with REFRESH=1 re-fetch) the De Helm catalogue snapshot
+	$(UV) run python scripts/snapshot_de_helm.py $(if $(REFRESH),--refresh,)
+
+season-tools: ## Scenario 2 with ordinary tool calling (RUNS=N to repeat)
+	$(RUN) python -m whisky_sandbox_demo.demos.season_tool_calls --runs $(RUNS)
+
+season-monty: ## Scenario 2 with Code Mode / Monty (RUNS=N to repeat)
+	$(RUN) python -m whisky_sandbox_demo.demos.season_monty --runs $(RUNS)
+
+season-compare: season-tools season-monty ## Both scenario 2 variants, e.g. make season-compare RUNS=3
 
 # --- Quality ---------------------------------------------------------------------------------
 
