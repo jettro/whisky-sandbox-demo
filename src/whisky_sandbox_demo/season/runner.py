@@ -14,9 +14,10 @@ from typing import Any
 
 from pydantic_ai import Agent
 from pydantic_ai.capabilities import AbstractCapability
+from pydantic_ai.toolsets import AbstractToolset
 from pydantic_ai.usage import UsageLimits
 
-from whisky_sandbox_demo import config, metrics, reporting
+from whisky_sandbox_demo import config, hybrid, metrics, reporting
 from whisky_sandbox_demo.season import reporting as season_reporting
 from whisky_sandbox_demo.season.models import SeasonPlan
 from whisky_sandbox_demo.season.prompts import SEASON_INSTRUCTIONS, SEASON_TASK
@@ -27,17 +28,36 @@ RUN_TIMEOUT_SECONDS = 900
 LIMITS = UsageLimits(request_limit=80)
 
 
-def build_season_agent(capabilities: Sequence[AbstractCapability[Any]] = ()) -> Agent:
+def build_season_agent(
+    capabilities: Sequence[AbstractCapability[Any]] = (),
+    toolsets: Sequence[AbstractToolset[Any]] = (),
+    extra_instructions: str | None = None,
+    extra_tools: Sequence[Any] = (),
+) -> Agent:
+    instructions = (
+        SEASON_INSTRUCTIONS
+        if not extra_instructions
+        else f"{SEASON_INSTRUCTIONS}\n{extra_instructions}"
+    )
     return Agent(
         config.get_agent_model(),
-        instructions=SEASON_INSTRUCTIONS,
+        instructions=instructions,
         output_type=SeasonPlan,
-        tools=list(SEASON_TOOLS),
+        tools=[*SEASON_TOOLS, *extra_tools],
+        toolsets=list(toolsets),
         capabilities=list(capabilities),
     )
 
 
-async def run_once(agent: Agent, variant: str, run_dir, uses_code_mode: bool) -> dict:
+async def run_once(
+    agent: Agent,
+    variant: str,
+    run_dir,
+    uses_code_mode: bool,
+    comparable_with: Sequence[str] = ("season_tool_calls", "season_monty"),
+    notes: Sequence[str] = (),
+    trace_path: bool = False,
+) -> dict:
     start = time.perf_counter()
     try:
         result = await asyncio.wait_for(
@@ -56,8 +76,9 @@ async def run_once(agent: Agent, variant: str, run_dir, uses_code_mode: bool) ->
         result=result,
         elapsed=elapsed,
         validation_valid=report.valid,
-        comparable_with=["season_tool_calls", "season_monty"],
+        comparable_with=list(comparable_with),
         uses_code_mode=uses_code_mode,
+        notes=list(notes),
     )
     reporting.save_run(
         run_dir,
@@ -68,13 +89,24 @@ async def run_once(agent: Agent, variant: str, run_dir, uses_code_mode: bool) ->
         snippets=snippets,
     )
     (run_dir / "DATA_NOTICE.txt").write_text(season_reporting.season_disclaimer() + "\n")
+    path = hybrid.path_trace(messages, snippets or ()) if trace_path else None
+    if path:
+        (run_dir / "path.json").write_text(path.model_dump_json(indent=2))
     print(
         f"  {'VALID' if report.valid else 'INVALID'} {round(elapsed, 1)}s "
         f"{season_reporting.run_metrics_line(run_metrics)}"
     )
     for check in report.failed[:8]:
         print(f"    FAIL {check.name}: {check.detail}")
-    return {"metrics": run_metrics, "valid": report.valid, "error": None, "plan": result.output}
+    if path:
+        hybrid.print_path(path)
+    return {
+        "metrics": run_metrics,
+        "valid": report.valid,
+        "error": None,
+        "plan": result.output,
+        "path": path,
+    }
 
 
 async def run_variant(
@@ -83,10 +115,16 @@ async def run_variant(
     *,
     uses_code_mode: bool,
     runs: int,
+    toolsets: Sequence[AbstractToolset[Any]] = (),
+    extra_instructions: str | None = None,
+    extra_tools: Sequence[Any] = (),
+    comparable_with: Sequence[str] = ("season_tool_calls", "season_monty"),
+    notes: Sequence[str] = (),
+    trace_path: bool = False,
 ) -> None:
     config.require_openai_key()
     tracing = config.configure_logfire()
-    agent = build_season_agent(capabilities)
+    agent = build_season_agent(capabilities, toolsets, extra_instructions, extra_tools)
     out_dir = config.OUTPUT_DIR / variant
     if out_dir.exists():
         shutil.rmtree(out_dir)  # one variant folder = one batch of runs
@@ -100,7 +138,17 @@ async def run_variant(
     results = []
     for i in range(1, runs + 1):
         print(f"\nrun {i}/{runs}")
-        results.append(await run_once(agent, variant, out_dir / f"run_{i:02d}", uses_code_mode))
+        results.append(
+            await run_once(
+                agent,
+                variant,
+                out_dir / f"run_{i:02d}",
+                uses_code_mode,
+                comparable_with,
+                notes,
+                trace_path,
+            )
+        )
 
     last_plan = next((r["plan"] for r in reversed(results) if r.get("plan")), None)
     if last_plan is not None:

@@ -64,6 +64,13 @@ def write_summary(out_dir: Path, runs: list[dict]) -> dict:
         "valid_rate": round(sum(1 for r in runs if r["valid"]) / len(runs), 2) if runs else None,
         **{f: _stats([getattr(m, f) for m in metrics]) for f in fields},
     }
+    paths = [r["path"] for r in runs if r.get("path") is not None]
+    if paths:
+        summary["routes"] = [p.routes for p in paths]
+        summary["runs_using_code"] = sum(1 for p in paths if p.run_code_calls)
+        summary["runs_money_arithmetic_in_code"] = sum(
+            1 for p in paths if p.money_arithmetic_in_code
+        )
     (out_dir / "summary.json").write_text(json.dumps(summary, indent=2))
     return summary
 
@@ -79,6 +86,13 @@ def print_summary(variant: str, summary: dict) -> None:
     ):
         s = summary[key]
         print(f"  {key}: median {s['median']} (min {s['min']}, max {s['max']})")
+    for routes in summary.get("routes", []):
+        print(f"  routes: {routes}")
+    if "routes" in summary:
+        print(
+            f"  runs using run_code: {summary['runs_using_code']}, "
+            f"money arithmetic in code: {summary['runs_money_arithmetic_in_code']}"
+        )
     for error in summary["errors"]:
         print(f"  error: {error}")
 

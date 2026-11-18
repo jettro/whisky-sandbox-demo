@@ -4,8 +4,8 @@ UV ?= uv
 RUN := PYDANTIC_AI_NO_BANNER=1 $(UV) run
 
 .DEFAULT_GOAL := help
-.PHONY: help install env demo-tools demo-monty demo-monty-program demo-smol demos guest-image \
-	season-snapshot season-tools season-monty season-compare \
+.PHONY: help install env demo-tools demo-monty demo-monty-program demo-hybrid demo-smol demos guest-image \
+	season-snapshot season-tools season-monty season-hybrid season-hybrid-calc season-compare \
 	lint format check test test-integration clean clean-output clean-guest
 
 help: ## Show this help
@@ -34,6 +34,9 @@ demo-monty: ## Demo 2: the same tools through Code Mode (Monty)
 demo-monty-program: ## Experiment: demo 2 with an extra "write one program" instruction
 	$(RUN) python -m whisky_sandbox_demo.demos.monty_program
 
+demo-hybrid: ## Experiment: the agent chooses between direct tool calls and run_code
+	$(RUN) python -m whisky_sandbox_demo.demos.hybrid
+
 demo-smol: guest/wheels ## Demo 3: Monty plus a Smol microVM that builds the tasting pack
 	$(RUN) python -m whisky_sandbox_demo.demos.monty_smol
 
@@ -54,6 +57,12 @@ season-tools: ## Scenario 2 with ordinary tool calling (RUNS=N to repeat)
 
 season-monty: ## Scenario 2 with Code Mode / Monty (RUNS=N to repeat)
 	$(RUN) python -m whisky_sandbox_demo.demos.season_monty --runs $(RUNS)
+
+season-hybrid: ## Scenario 2 where the agent chooses between tool calls and run_code (RUNS=N)
+	$(RUN) python -m whisky_sandbox_demo.demos.season_hybrid --runs $(RUNS)
+
+season-hybrid-calc: ## Scenario 2 hybrid plus the price_season calculator tool (RUNS=N)
+	$(RUN) python -m whisky_sandbox_demo.demos.season_hybrid_calc --runs $(RUNS)
 
 season-compare: season-tools season-monty ## Both scenario 2 variants, e.g. make season-compare RUNS=3
 

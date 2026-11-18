@@ -9,8 +9,9 @@ from typing import Any
 
 from pydantic_ai import Agent
 from pydantic_ai.capabilities import AbstractCapability
+from pydantic_ai.toolsets import AbstractToolset
 
-from whisky_sandbox_demo import config, metrics, reporting
+from whisky_sandbox_demo import config, hybrid, metrics, reporting
 from whisky_sandbox_demo.models import TastingPlan
 from whisky_sandbox_demo.prompts import INSTRUCTIONS, TASK
 from whisky_sandbox_demo.tools import DOMAIN_TOOLS
@@ -20,6 +21,7 @@ from whisky_sandbox_demo.validation import validate_plan
 def build_planning_agent(
     capabilities: Sequence[AbstractCapability[Any]] = (),
     extra_instructions: str | None = None,
+    toolsets: Sequence[AbstractToolset[Any]] = (),
 ) -> Agent:
     instructions = (
         INSTRUCTIONS if not extra_instructions else f"{INSTRUCTIONS}\n{extra_instructions}"
@@ -29,6 +31,7 @@ def build_planning_agent(
         instructions=instructions,
         output_type=TastingPlan,
         tools=list(DOMAIN_TOOLS),
+        toolsets=list(toolsets),
         capabilities=list(capabilities),
     )
 
@@ -41,10 +44,12 @@ async def run_planning_demo(
     extra_instructions: str | None = None,
     comparable_with: Sequence[str] = ("tool_calls", "monty"),
     notes: Sequence[str] = (),
+    toolsets: Sequence[AbstractToolset[Any]] = (),
+    trace_path: bool = False,
 ) -> None:
     config.require_openai_key()
     tracing = config.configure_logfire()
-    agent = build_planning_agent(capabilities, extra_instructions)
+    agent = build_planning_agent(capabilities, extra_instructions, toolsets)
     print(f"[{variant}] model={config.get_agent_model()} tracing={'logfire' if tracing else 'off'}")
     print(f"Task: {TASK}")
 
@@ -73,6 +78,9 @@ async def run_planning_demo(
     reporting.print_plan(plan)
     reporting.print_validation(report)
     reporting.print_metrics(run_metrics)
+    path = hybrid.path_trace(messages, snippets or ()) if trace_path else None
+    if path:
+        hybrid.print_path(path)
 
     out_dir = config.OUTPUT_DIR / variant
     reporting.save_run(
@@ -83,6 +91,8 @@ async def run_planning_demo(
         messages=messages,
         snippets=snippets,
     )
+    if path:
+        (out_dir / "path.json").write_text(path.model_dump_json(indent=2))
     print(f"\nSaved to {out_dir}/")
 
 

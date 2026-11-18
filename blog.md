@@ -277,10 +277,14 @@ All valid, all €119.80 again; artifacts in demo 3 all pass.
 - **Plain Monty is still REPL-style** with sol, just fewer steps (4 snippets instead of 6).
   Snippet 3 fetched details + all three suppliers in one `asyncio.gather` and returned the raw
   result: 13 KB back into the context. Still 2.5x the input tokens of plain tool calls.
-- **Both models made the same type error** in the one-program variant: they assumed a `whiskies`
-  key on the supplier-offers result (`Unknown key "whiskies" for TypedDict SupplierOffersResult`).
-  The typed stubs are in the prompt, but the models guess field names anyway. Monty's type check
-  caught it before any tool ran; sol's fix included `from typing import Any` to loosen the types.
+- **Correction (checked 2026-11-16):** sol's first program was *correct at runtime*. It did
+  `results = await asyncio.gather(get_whisky_details(...), *[get_supplier_offers(...) ...])` and
+  then `results[0]['whiskies']`. Monty's type checker types the gathered results as the union
+  `WhiskyDetailsResult | SupplierOffersResult`, so `results[0]['whiskies']` fails
+  (`Unknown key "whiskies" for TypedDict SupplierOffersResult`). The fix the model chose: wrap
+  the calls in `async def ... -> Any` helpers and annotate `results: Any`. A type-checker
+  limitation, not a wrong guess. (luna's earlier rejection, `Unknown key "whiskies" for TypedDict
+  Supplier`, was a different case.)
 - **Demo 3 got more expensive with sol** (8 requests, 67k tokens): it did the planning in 4
   REPL-style snippets, then write_file → run_command → an extra `list_directory` to confirm the
   files. Each extra request re-sends a growing context.
@@ -342,3 +346,106 @@ What this shows:
   everything at De Helm, which ships free above €100. The shipping trade-off barely mattered.
 - Both scenarios together make the post: Code Mode costs ~1.2k tokens of tool description per
   request, and pays that back only when code can shrink a lot of data before the model sees it.
+
+## Experiment: hybrid — the agent chooses between tool calls and `run_code` (2026-11-18)
+
+Question from a reader (and from me): what if the agent gets both routes and picks per step?
+
+Setup (`demos/hybrid.py`, `demos/season_hybrid.py`, `src/whisky_sandbox_demo/hybrid.py`):
+- `CodeMode` cannot do this by itself: its `tools` selector puts each tool either in the sandbox
+  or native, never both. Workaround: keep the normal tools on the agent and add a separate
+  `CodeModeToolset(wrapped=FunctionToolset(DOMAIN_TOOLS))`. The model sees the four tools plus
+  `run_code`, and inside `run_code` the same four functions under the same names.
+- One neutral instruction (`HYBRID_INSTRUCTIONS`): both routes exist, choose per step, mixing is
+  fine. Nothing about when to prefer which. Same Code Mode limits as the Monty variants.
+- `path.json` per run: the route per model response (direct / code / mixed / output) and a
+  heuristic flag for "a snippet does arithmetic on prices/costs".
+- 3 runs per model per scenario. Output in `output/hybrid_runs/<model>/`.
+
+### Scenario 1 (one tasting, €120), 3 runs each
+
+| | luna | sol |
+| --- | --- | --- |
+| valid | 3/3 | 3/3 |
+| routes | `direct > direct > direct > output` (x2), one with 4 direct steps | `direct > direct > code > code > output` (x2), one with 4 code steps |
+| used `run_code` | 0/3 | 3/3 |
+| requests | 4–5 | 5–7 |
+| input tokens | 15.0k–22.8k | 21.6k–33.8k |
+| baseline (tool calls / Monty, one run) | 8.8k / 29.6k | 8.9k / 22.5k |
+
+- **luna never touched `run_code`.** It behaved exactly like plain tool calling, but paid ~6k
+  extra input tokens per run for a `run_code` description it never used.
+- **sol switched at the same point every time**: brief and `search_whiskies` as direct calls,
+  then code for the fan-out (details + three suppliers in one `asyncio.gather`) and for the
+  check: bottles, line totals, sum, `within_budget`. The picks were made by the model and
+  hard-coded as ids; the code verified them. That is the split I hoped for — discover directly,
+  compute in code — and the model found it without being told.
+- But in tokens the hybrid is not a free lunch here: sol hybrid ≈ sol Monty, both well above plain
+  tool calls. For a small problem the extra route only adds weight.
+
+### Scenario 2 (club season, full catalogue), 3 runs each
+
+| | luna | sol | sol tool calls / Monty (2026-11-16) |
+| --- | --- | --- | --- |
+| valid | 2/3 | 3/3 | 3/3 / 3/3 |
+| routes | `direct > code ×4–8 > output`; one run did a final direct `get_products` | `direct > code ×5 > output`, all three runs | — |
+| requests, median | 10 | 7 | 8 / 8 |
+| input tokens, median | 86k (39k–230k) | 67k (60k–88k) | 208k / 125k |
+| peak single request, median | 17.9k | 17.1k | 48.6k / 27.8k |
+
+- **With a large catalogue both models moved to code** right after `get_season_brief`. So luna
+  *can* choose code; it just doesn't when the problem is small. The data volume makes the choice.
+- **sol hybrid beat both earlier variants**: median 67k input tokens vs 125k (Monty) and 208k
+  (tool calls), fewer requests, smallest peak. Plausible reason: the brief arrived as a direct
+  call, so the first snippet could page through every catalogue right away
+  (`asyncio.gather` over all pages computed from `product_count`) instead of spending a snippet
+  on discovery. Only 3 runs, and earlier we saw big variance, so treat this as a hint, not a result.
+- **luna's invalid run is the budget trap in a new form**: all eight snippets fetched and
+  filtered, none mentions shipping. The model then wrote the orders itself and charged €6.95
+  shipping on a De Helm order above the free-shipping threshold (planned €537.15, expected
+  €530.20). Its own reasoning even says "shipping fee (not the free-shipping threshold)". Code
+  was available and used — just not for the one sum that mattered.
+- The heuristic "money arithmetic in code" was True for every scenario 2 run, including the
+  invalid one. Doing *some* arithmetic in code is not the same as doing *all* of it there. The
+  flag is too coarse to predict validity.
+
+### Takeaways for a follow-up post
+
+1. Giving the choice does not make the agent worse, but it does not make it smarter either: it
+   picks the route its model and the data size push it to. Small data → tool calls; big data → code.
+2. The strong model found the good split (discover directly, compute in code) by itself; the
+   weaker one only switched when the data forced it.
+3. The final arithmetic is still the weak spot. Nothing in the hybrid forces totals into code.
+   That is a job for the output validator (or a `compute_order_total` tool), not for the route choice.
+4. You pay for the option in every request: the `run_code` description adds ~1.5k input tokens
+   per request, ~6k per run in scenario 1, even when the model never uses it.
+
+## Fix experiment: a `price_season` calculator (2026-11-18)
+
+`season/calculator.py`: `price_season(evenings)` takes the selection (theme, supplier, product
+ids in order) and returns every number of the plan: bottles, line totals, subtotals, one order
+per supplier with shipping (free above threshold), season total, `within_budget`, and problems it
+can see (not offered, stock, repeats). No eligibility/theme checks: choosing stays with the model.
+Offered directly and inside run_code. One extra instruction: price the final selection with
+`price_season` and copy its numbers. Variant: `demos/season_hybrid_calc.py`.
+
+Also 5 more plain hybrid runs with luna (batch 2), to get a firmer failure rate. Batch 1 moved to
+`output/hybrid_runs/<model>/season_hybrid_batch1/`, batch 2 in `output/hybrid_runs/batch2/`.
+
+| scenario 2 | luna hybrid (8 runs) | luna + calc (5) | sol hybrid (3) | sol + calc (3) |
+| --- | --- | --- | --- | --- |
+| valid | 7/8 | 5/5 | 3/3 | 3/3 |
+| requests, median | 10 (6–19) | 14 (12–24) | 7 | 8 (8–9) |
+| input tokens, median | 156k (39k–390k) | 151k (133k–544k) | 67k (60k–88k) | 118k (105k–142k) |
+| peak request, median | 25.6k | 26.5k | 17.1k | 20.4k |
+| elapsed, median | 118 s | 154 s | 63 s | 57 s |
+
+- Every calc run used `price_season`: luna always as a direct call (sometimes twice with the
+  same input), sol twice inside `run_code`, once directly. All quotes: one S1 order, shipping 0.
+- Batch 2 of plain hybrid luna was 5/5 valid, so the failure rate without the calculator is 1/8.
+  Too rare to prove the fix with 5 runs; what the calculator does is remove the error *class*:
+  the plan's numbers now come from a function, not from the model.
+- Cost: sol +1 request and ~50k more input tokens (67k → 118k), but sol hybrid batch 1 may have
+  been lucky: season_monty was 125k. luna: about the same median, enormous spread either way.
+- luna is erratic in hybrid mode: 6–19 requests and 39k–390k tokens for the same task. The choice
+  of route adds a degree of freedom, and a weaker model uses it inconsistently.
